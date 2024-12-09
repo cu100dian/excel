@@ -47,6 +47,20 @@ function processExcelData(excelData) {
         return null;
     }
 
+    // Получаем индексы нужных колонок по названию
+    const headers = excelData[0]; // Первая строка — это заголовки
+    const timeIndex = headers.indexOf('Время');
+    const distributorIndex = headers.indexOf('Распределитель');
+    const firmIndex = headers.indexOf('Фирма');
+    const quantityIndex = headers.indexOf('Количество');
+    const addedIndex = headers.indexOf('Добавил');
+
+    // Если какие-то колонки не найдены, выводим ошибку
+    if (timeIndex === -1 || distributorIndex === -1 || firmIndex === -1 || quantityIndex === -1 || addedIndex === -1) {
+        console.error("Не удалось найти нужные колонки.");
+        return;
+    }
+
     // Фильтрация по времени (с 9 утра прошлого дня до 9 утра сегодняшнего дня)
     const now = new Date();
     const today9am = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 9));
@@ -56,32 +70,32 @@ function processExcelData(excelData) {
     // Фильтруем данные по времени
     const filteredData = excelData.filter((row, index) => {
         if (index === 0) return true; // Оставляем заголовки
-        const date = parseExcelDate(row[0]);
+        const date = parseExcelDate(row[timeIndex]);
         return date >= yesterday9am && date < today9am;
     });
 
     // Удаляем строки с "Diesel Delivery" и "AllSeeds1"
     const cleanedData = filteredData.filter(row => {
-        const firm = row[3]; // Колонка "Фирма"
+        const firm = row[firmIndex]; // Колонка "Фирма"
         return firm !== 'Diesel Delivery' && firm !== 'AllSeeds1';
     });
 
     // Проходим по колонке "Распределитель" и меняем "KDP-103" на "Хуторская Алма"
     cleanedData.forEach(row => {
-        if (row[2] === 'KDP-103') { // Колонка "Распределитель"
-            row[2] = 'Хуторская Алма';
+        if (row[distributorIndex] === 'KDP-103') { // Колонка "Распределитель"
+            row[distributorIndex] = 'Хуторская Алма';
         }
 
         // Если в колонке "Распределитель" пусто, копируем из "Добавил"
-        if (!row[2]) { // Колонка "Распределитель"
-            row[2] = row[11]; // Копируем из колонки "Добавил" (колонка L)
+        if (!row[distributorIndex]) { // Колонка "Распределитель"
+            row[distributorIndex] = row[addedIndex]; // Копируем из колонки "Добавил" (колонка L)
         }
 
         // Меняем распределитель на "Форс Алма", если в колонке "Фирма" определенные значения
-        const firm = row[3]; // Колонка "Фирма"
+        const firm = row[firmIndex]; // Колонка "Фирма"
         const firmsToReplace = ["Алма Вин ТОВ (1)", "Форстранс (1)", "Иванов Катена (1)", "Алма Ритейл (1)"];
         if (firmsToReplace.includes(firm)) {
-            row[2] = 'Форс Алма'; // Меняем "Распределитель" на "Форс Алма"
+            row[distributorIndex] = 'Форс Алма'; // Меняем "Распределитель" на "Форс Алма"
         }
     });
 
@@ -92,8 +106,8 @@ function processExcelData(excelData) {
     let forsalmaSum = 0;
 
     cleanedData.forEach(row => {
-        const distributor = row[2]; // Колонка "Распределитель"
-        const quantity = row[6] || 0; // Колонка "Количество"
+        const distributor = row[distributorIndex]; // Колонка "Распределитель"
+        const quantity = row[quantityIndex] || 0; // Колонка "Количество"
 
         if (distributor === 'Хуторская Алма') {
             hutorskayaAlmaSum += quantity;
