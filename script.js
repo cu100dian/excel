@@ -82,14 +82,14 @@ function processExcelData(data) {
     // Формируем итоговый вывод
     const totalSum = firmsSum + hutorskayaAlmaSum + vinnytsiaAlmaSum + safyanySum;
     const output = `
-________________________
+_________________________
 Форс/Алма - ${firmsSum.toFixed(2)}
 Хуторская Алма - ${hutorskayaAlmaSum.toFixed(2)}
 Винница Алма - ${vinnytsiaAlmaSum.toFixed(2)}
 Сафьяны - ${safyanySum.toFixed(2)}
-________________________
+_________________________
 Сумма - ${totalSum.toFixed(2)}
-________________________
+_________________________
 `;
 
     // Отображаем результат
